@@ -4,7 +4,7 @@ A Git-style VS Code sidebar for local Codex conversation branches. The first pag
 
 ## Install
 
-Install `codex-session-tree-0.5.5.vsix` with **Extensions: Install from VSIX**, then open **Codex Tree** in the activity bar. The OpenAI Codex extension is needed to open a session. The Codex CLI, either bundled with that extension or set with `codexSessionTree.codexPath`, supplies the App Server used for listing sessions.
+Install `codex-session-tree-0.5.6.vsix` with **Extensions: Install from VSIX**, then open **Codex Tree** in the activity bar. The OpenAI Codex extension is needed to open a session. The Codex CLI, either bundled with that extension or set with `codexSessionTree.codexPath`, supplies the App Server used for listing sessions.
 
 ## How branches are found
 

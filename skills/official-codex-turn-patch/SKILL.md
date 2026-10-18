@@ -1,43 +1,96 @@
 ---
 name: official-codex-turn-patch
-description: Maintain the local patch that lets Codex Session Tree scroll an already open official VS Code Codex conversation to another turn. Use when installing, upgrading, repairing, testing, or restoring this version-specific host and webview patch.
+description: Adapt, install, test, or restore the version-specific patch that makes Codex Session Tree scroll an already open official VS Code Codex conversation to a selected turn. Use when official Codex updates break turn navigation or when this patch must be maintained.
 ---
 
-# Official Codex turn navigation patch
+# 官方 Codex 会话轮次跳转补丁
 
-Work in the `codex-session-tree` extension directory. The patch source is `officialPatch.js`; the route that opens the official conversation is in `extension.js`. The installed `openai.chatgpt` extension is the patch target, not the source of truth. Do not apply a patch automatically on tree extension activation.
+本 Skill 服务于本仓库 `codex-session-tree`。按下面顺序执行；不要因为某个字符串在新版本里“看起来差不多”就直接改已安装的官方扩展。用户只要求分析时停在只读检查阶段；只有任务包含安装、修复或升级时才写入官方扩展。
 
-## Establish the exact target
+## 目标和文件边界
 
-1. Find the `openai.chatgpt` extension loaded by the current VS Code instance and record its version and extension path. Do not assume that a local VS Code, Remote SSH, or Insiders window uses the same extension directory. From an extension host, `vscode.extensions.getExtension('openai.chatgpt')?.extensionPath` gives the path.
-2. Inspect that version's `out/extension.js` custom editor provider and `webview/assets/local-conversation-thread-*.js`. Confirm that a newly opened `openai-codex://route/local/<session-id>?codexTreeTurnId=<turn-id>&codexTreeNav=<nonce>` reaches the webview's `initial-route` meta tag. This URI is the fallback for a session without a reusable panel; the nonce lets a later fallback reopen the same target. Reusing an open panel must not create a new URI.
-3. Check the patch markers in both the conversation asset and `out/extension.js`, and check each `.codex-session-tree-original` backup. `officialPatch.js` requires one exact match for each code anchor and refuses unknown versions. If anchors changed, inspect the new implementation and update the patcher; do not force an old string replacement into a new bundle.
+- 本仓库 `extension.js`：树标题点击后先执行 `codexSessionTree.revealTurn`；无可复用面板时才调用 `vscode.open`。
+- 本仓库 `officialPatch.js`：补丁生成、双文件备份、安装、恢复和已安装检测的唯一维护入口。不要把实验性改动仅留在已安装的官方 bundle 中。
+- 官方扩展 `out/extension.js`：注入宿主命令，用于找到已打开的同一会话面板并发送消息。
+- 官方扩展 `webview/assets/local-conversation-thread-*.js`：注入消息监听和虚拟列表定位逻辑。
+- `references/adapter-map.md`：已验证版本的变量、数据流和故障地图。**适配新的官方版本前先读它，再逐项核实新版本；不能照抄旧的压缩变量名。**
 
-## Change the patch
+成功标准：首次点击可打开官方会话并定位；同一会话后续点击另一个标题只移动原面板，不新增页签；重复点击同一标题再次定位；旧历史轮次也能正确显示用户问题。侧栏状态文字和 `postMessage() === true` 都不足以证明成功。
 
-Keep the patch in `officialPatch.js` so installation remains reproducible and reversible. The host patch registers `codexSessionTree.revealTurn`: it finds a ready custom editor panel whose `initialRoute` matches the requested conversation, reveals that panel, and posts `codex-tree-reveal-turn` to it. The tree calls this command first. If it returns false, such as when no matching ready panel exists, the tree falls back to `vscode.open`. Reuse turn data already loaded for the tree instead of requesting the entire conversation on every click.
+## 1. 确认当前目标，保持只读
 
-The webview patch handles the message and also reads `codexTreeTurnId` from `initial-route` for a newly opened panel. It finds the matching turn in `Sn` and calls `qt.current.scrollToKey(entry.turnKey, undefined, {align:'top'})`. If the target is outside the rendered virtual list, it hydrates an available preview with `Rn` and `Vn`, or loads older pages through `Tr(D,i).loadOlderConversationHistoryPage(...)` before retrying. Keep the message listener active even when the initial route has no turn ID; clean it up on unmount. A second click on the same title must request scrolling again without remounting the conversation.
+在仓库根目录工作。先找出**当前 VS Code 窗口实际加载**的 `openai.chatgpt` 扩展目录。可用 `code --list-extensions --show-versions` 确认版本；在扩展宿主中，`vscode.extensions.getExtension('openai.chatgpt')?.extensionPath` 给出确切目录。本地 VS Code、Insiders、Remote SSH 的扩展目录可能不同，不要只因为文件存在就认定是当前目标。
 
-These names are minified, version-specific symbols, not a stable API. Recheck their meaning after every official extension update. In particular, `Tr(D,i)` uses the conversation object `i`; passing an unrelated lookup caused an `undefined.id` error in the previously tested version. A simple `scrollToKey` call also failed for older turns until history loading was added.
-
-Preserve the tree extension's unpatched fallback: clicking a turn opens its read-only turn reader when `isInstalled()` is false. `isInstalled()` must check both host and webview markers. A successful `postMessage()` or sidebar status is not proof that scrolling succeeded.
-
-## Install, verify, restore
-
-Run these commands from the `codex-session-tree` directory with the actual extension path:
+把实际目录填入下面变量，之后所有命令使用同一个值：
 
 ```bash
-node officialPatch.js install /path/to/openai.chatgpt-extension
-node --check /path/to/openai.chatgpt-extension/out/extension.js
-node --check /path/to/openai.chatgpt-extension/webview/assets/local-conversation-thread-<hash>.js
-npm test
+OFFICIAL_DIR='/absolute/path/to/openai.chatgpt-version-platform'
+node skills/official-codex-turn-patch/scripts/inspect-target.js "$OFFICIAL_DIR"
 ```
 
-The installer writes an original backup beside each changed file as `<file>.codex-session-tree-original`. If an older patch version is installed, restore it with the matching older patcher before installing the new one; the current restore command expects both current markers and backups. Reload the VS Code window so both the extension host and its webview use the new code.
+脚本只读，输出官方版本、宿主文件、候选会话 asset、SHA-256、锚点出现次数、补丁标记和每个备份的状态。记录输出。检查 `publisher/name` 确实是 `openai/chatgpt`，并且 `targetWebAssetCount` 为 1。它列出其他同名前缀的辅助 chunk 是正常的；真正目标必须唯一。
 
-Verify in the UI by clicking a turn old enough to require loading earlier history: the official conversation must visibly scroll to that exact user question. Click another turn in the same session and confirm the existing editor scrolls without opening another tab. Scroll elsewhere and click the same title again; then click a different branch. Check the question text in the conversation, not merely the sidebar status. Automated tests can cover command dispatch and repeated message handling, but do not replace this visual check. Remove temporary debug instrumentation before finishing.
+| 检查结果 | 下一步 |
+| --- | --- |
+| 宿主和目标 webview 都没有补丁标记、没有备份，`hostCommand`、`webRef`、`webEffect` 都恰好出现 1 次 | 可以进入第 2 步；仍须先测试生成后的补丁。 |
+| 宿主有 `hostCurrent`、目标有 `webCurrent`，两份备份都存在 | 当前补丁已在磁盘上；不要重复写入。先重载 VS Code 并做第 4 步的 UI 验证。若任务是替换这个补丁，先用当前补丁器恢复，再重新从第 1 步检查。 |
+| 目标有 `webOld`，通常只有一份 webview 备份 | 这是旧版单文件补丁。先用**该旧版的补丁器**恢复，再重新检查；当前双文件 `restore` 不适用。 |
+| 目标数量不是 1、锚点缺失/重复、只有一侧有标记、备份状态矛盾、版本无法确认 | **停止写入。** 定位原因并适配代码；不要删除备份、强行替换字符串或复制其他版本的 bundle。 |
 
-To undo the patch, run `node officialPatch.js restore /path/to/openai.chatgpt-extension` and reload VS Code. Restore only when both current files still carry this patch's markers and both matching backups exist. If the official extension was updated or the backups and current files no longer match, inspect them before changing either; never copy an old bundle into a newer extension.
+## 2. 官方版本变化时如何适配
 
-When changing the tree extension itself, update its package version and README, build the VSIX, and confirm that this Skill is included. An official extension update may replace the installed patch; repeat target inspection and UI verification for the new version.
+先读 `references/adapter-map.md`。用下面的限长查看工具定位新版本代码；不要直接 `rg` 输出压缩文件的整条巨型行：
+
+```bash
+node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/out/extension.js" 'registerCustomEditorProvider' 400
+node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/out/extension.js" 'initialRoute' 400
+node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/webview/assets/ACTUAL_TARGET.js" 'scrollToKey' 400
+```
+
+把 `ACTUAL_TARGET.js` 换成检查脚本输出的 `targetWebAsset` 文件名。若原锚点消失，先找数据流而非猜变量：URI 查询参数如何到达 `initial-route`；哪个 provider 持有 custom editor 面板及 ready 状态；哪个 ref 控制当前会话虚拟列表；已渲染轮次、预览和旧历史分页分别从哪里来。确认新变量的定义及调用点后，修改本仓库 `officialPatch.js` 中的锚点和注入函数；必要时同步修改 `extension.js`。
+
+必须保留以下行为：
+
+1. 宿主命令只复用**同一 threadId、已 ready、仍存活**的面板；发送 `{type:'codex-tree-reveal-turn',threadId,turnId}`。找不到则返回 false，让树插件走首次打开路径。
+2. webview 没有初始 `codexTreeTurnId` 时也注册消息监听；只处理当前会话的消息；重复点击相同轮次也重新滚动；卸载时移除监听和计时器。
+3. 目标不在当前虚拟列表时，继续加载预览或旧历史，等目标可用再滚动；不能把“已发消息”当成“已定位”。
+4. 宿主锚点和 webview 的两个锚点都必须唯一；`isInstalled()` 必须检查两侧标记；安装必须在写入前创建对应的两份原件备份。无补丁时保留只读轮次阅读页回退。
+
+若需要临时调试，只在可恢复的测试副本或已建立备份的当前版本上操作；把诊断代码移回 `officialPatch.js` 后清除临时 overlay、日志和手改痕迹。不要直接把旧版本的压缩变量名或整个旧 bundle 拷到新版本。
+
+## 3. 安装前验证，再安装
+
+先更新相关测试：至少覆盖补丁锚点唯一性与可恢复性、宿主命令复用正确会话面板、同一面板连续切换和重复点击轮次；历史分页逻辑变化时还要覆盖旧轮次的加载路径。运行：
+
+```bash
+npm test
+node --check officialPatch.js
+node skills/official-codex-turn-patch/scripts/check-patched-syntax.js "$OFFICIAL_DIR"
+```
+
+最后一条命令只在临时目录生成补丁并解析两份产物，不写官方扩展。任何失败都要先修复并重跑；不要跳过。确认第 1 步的文件及版本仍未变化后再安装：
+
+```bash
+node officialPatch.js install "$OFFICIAL_DIR"
+node skills/official-codex-turn-patch/scripts/inspect-target.js "$OFFICIAL_DIR"
+```
+
+确认安装输出 `installed: true`，检查脚本显示宿主 `hostCurrent`、目标 webview `webCurrent` 和两份备份。安装是针对本机已安装扩展的本地补丁，不等于修改官方上游源码。**重载整个 VS Code 窗口**，让扩展宿主和 webview 都加载新文件；只刷新树页面不够。
+
+## 4. 实际 UI 验证与故障处理
+
+按 `references/adapter-map.md` 的验证矩阵逐项操作，至少检查首次打开、同会话不同轮次、重复点击同轮次、较早历史轮次和分支切换。看官方会话中实际显示的用户问题，并确认同会话跳转没有多一个页签。记录通过/失败的具体轮次和官方扩展版本。不能操作 UI 时，明确标记“只通过自动与语法检查，UI 未验证”。
+
+若失败，先分层定位：树插件有没有调用命令；官方宿主命令有没有匹配 ready 面板；消息有没有到达当前会话；目标是否在已加载条目；旧历史是否成功翻页。参考 `references/adapter-map.md` 的故障表。不要通过不断新开 URI 来掩盖“复用面板失败”。
+
+若要撤销**当前双文件版本**：
+
+```bash
+node officialPatch.js restore "$OFFICIAL_DIR"
+```
+
+只有两份当前标记和两份对应备份都存在时才能恢复；之后重载 VS Code。若官方扩展已经升级、文件与备份不成对或是旧版单文件补丁，先调查版本和哈希，不要盲目复制备份。恢复后重新运行检查脚本确认标记消失。
+
+## 5. 交付
+
+代码有变化时更新 `README.md`、插件版本和必要测试；重新打包 VSIX，确认 `skills/official-codex-turn-patch/` 的全部文件在包中。报告官方版本、安装/恢复状态、测试结果、UI 验证结果以及仍未验证的部分。不要把本地补丁描述成官方支持的稳定 API。

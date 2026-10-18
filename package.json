@@ -2,7 +2,7 @@
   "name": "codex-session-tree",
   "displayName": "Codex Session Tree",
   "description": "Browse Codex sessions, turns, and forks in a VS Code sidebar.",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "publisher": "local",
   "private": true,
   "license": "MIT",
