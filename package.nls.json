@@ -1,0 +1,11 @@
+{
+  "extension.displayName": "Codex Branch Map",
+  "extension.description": "Explore Codex conversation branches as a Git-style graph and jump to any turn.",
+  "viewContainer.title": "Codex Branch Map",
+  "view.sessions": "Sessions",
+  "command.refresh": "Refresh Codex Branch Map",
+  "command.open": "Open Codex Session",
+  "config.title": "Codex Branch Map",
+  "config.codexPath": "Path to the Codex CLI. Empty uses the installed OpenAI Codex extension, then codex on PATH.",
+  "config.showArchived": "Include archived Codex sessions."
+}

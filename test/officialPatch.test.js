@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
-const { revealTurnEffect, patchSource, patchHostSource, install, restore, isInstalled, marker, hostMarker } = require('../officialPatch');
+const { revealTurnEffect, patchSource, patchHostSource, install, restore, isInstalled, marker, hostMarker } = require('../src/codex/officialPatch');
 
 const source = `let qt=(0,Q.useRef)(null),[Xt,Zt]=foo;${
   '(0,Q.useEffect)(()=>_i(D,t,{revealItem:Hn,revealResponseTextAnnotation:Un}),[t,Hn,Un,D])'

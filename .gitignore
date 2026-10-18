@@ -1,4 +1,5 @@
 # Built extension packages
+dist/
 *.vsix
 
 # Dependencies and test output

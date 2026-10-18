@@ -104,7 +104,7 @@ function buildFamilies(threads, firstTurnByThread) {
 }
 
 function buildTurnTree(family, turnsByThread) {
-  const root = { id: 'root', label: '开始', threadId: family.threads[0]?.id, children: [], sessions: [] };
+  const root = { id: 'root', label: 'root', threadId: family.threads[0]?.id, children: [], sessions: [] };
   for (const thread of family.threads) {
     let node = root;
     const turns = turnsByThread.get(thread.id) || [];

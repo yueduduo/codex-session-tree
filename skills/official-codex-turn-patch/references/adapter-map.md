@@ -6,10 +6,10 @@
 
 | 位置 | 在这个版本中的作用 |
 | --- | --- |
-| 本仓库 `extension.js` | 树标题点击进入 `revealOfficialTurn(threadId, turnId)`。先调用 `codexSessionTree.revealTurn`；失败才用 `vscode.open` 打开带 `codexTreeTurnId` 的 URI。 |
+| 本仓库 `src/extension.js` 与 `src/ui/sessionNavigation.js` | 树标题点击进入 `revealOfficialTurn(threadId, turnId)`。先调用 `codexSessionTree.revealTurn`；失败才用 `vscode.open` 打开带 `codexTreeTurnId` 的 URI。 |
 | 官方 `out/extension.js` | `registerCustomEditorProvider` 注册会话编辑器；`resolveCustomEditor` 把 URI 变成面板的 `initialRoute`；`editorPanels` 保存面板及 ready 状态。 |
 | 官方 `webview/assets/local-conversation-thread-*.js` | 会话 React 组件保存虚拟列表 ref、已显示的轮次、历史页和加载函数。 |
-| 本仓库 `officialPatch.js` | 把宿主命令和 webview effect 注入上述两个官方文件；安装前保存两份原件。 |
+| 本仓库 `src/codex/officialPatch.js` | 把宿主命令和 webview effect 注入上述两个官方文件；安装前保存两份原件。 |
 
 ## 必须重新定位的代码
 
@@ -28,7 +28,7 @@
 
 ## 从旧版单文件补丁迁移
 
-旧版 v1 只修改 webview asset，标记是 `/* codex-session-tree:reveal-turn:v1 */`，只有该 asset 的 `.codex-session-tree-original` 备份。当前 `officialPatch.js restore` 要求双文件标记和双备份，不能用于 v1。
+旧版 v1 只修改 webview asset，标记是 `/* codex-session-tree:reveal-turn:v1 */`，只有该 asset 的 `.codex-session-tree-original` 备份。当前 `src/codex/officialPatch.js restore` 要求双文件标记和双备份，不能用于 v1。
 
 如果确实有当时生成的 `codex-session-tree-0.5.3.vsix`，可以只提取其中的旧补丁器并用它恢复。先用 `unzip -p <old-vsix> extension/officialPatch.js` 查看输出是否包含 v1 标记和单文件 `restore`，确认后才执行：
 

@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { inWorkspace, familyInWorkspace } = require('../workspace');
+const { inWorkspace, familyInWorkspace } = require('../src/domain/workspace');
 
 test('classifies nested session folders in any open VS Code workspace root', () => {
   const folders = [{ uri: { fsPath: '/work/alpha' } }, { uri: { fsPath: '/work/beta' } }];

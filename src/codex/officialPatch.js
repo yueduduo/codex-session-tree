@@ -187,7 +187,7 @@ module.exports = { marker, hostMarker, revealTurnEffect, patchSource, patchHostS
 if (require.main === module) {
   const [action, extensionPath] = process.argv.slice(2);
   if (!['install', 'restore'].includes(action) || !extensionPath) {
-    console.error('Usage: node officialPatch.js <install|restore> <official-extension-path>');
+    console.error('Usage: node src/codex/officialPatch.js <install|restore> <official-extension-path>');
     process.exitCode = 2;
   } else {
     try { console.log(JSON.stringify(action === 'install' ? install(extensionPath) : restore(extensionPath))); }

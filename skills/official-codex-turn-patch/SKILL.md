@@ -9,8 +9,8 @@ description: Adapt, install, test, or restore the version-specific patch that ma
 
 ## 目标和文件边界
 
-- 本仓库 `extension.js`：树标题点击后先执行 `codexSessionTree.revealTurn`；无可复用面板时才调用 `vscode.open`。
-- 本仓库 `officialPatch.js`：补丁生成、双文件备份、安装、恢复和已安装检测的唯一维护入口。不要把实验性改动仅留在已安装的官方 bundle 中。
+- 本仓库 `src/extension.js`：处理树中的轮次点击；`src/ui/sessionNavigation.js` 先执行 `codexSessionTree.revealTurn`，无可复用面板时才调用 `vscode.open`。
+- 本仓库 `src/codex/officialPatch.js`：补丁生成、双文件备份、安装、恢复和已安装检测的唯一维护入口。不要把实验性改动仅留在已安装的官方 bundle 中。
 - 官方扩展 `out/extension.js`：注入宿主命令，用于找到已打开的同一会话面板并发送消息。
 - 官方扩展 `webview/assets/local-conversation-thread-*.js`：注入消息监听和虚拟列表定位逻辑。
 - `references/adapter-map.md`：已验证版本的变量、数据流和故障地图。**适配新的官方版本前先读它，再逐项核实新版本；不能照抄旧的压缩变量名。**
@@ -47,7 +47,7 @@ node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/out
 node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/webview/assets/ACTUAL_TARGET.js" 'scrollToKey' 400
 ```
 
-把 `ACTUAL_TARGET.js` 换成检查脚本输出的 `targetWebAsset` 文件名。若原锚点消失，先找数据流而非猜变量：URI 查询参数如何到达 `initial-route`；哪个 provider 持有 custom editor 面板及 ready 状态；哪个 ref 控制当前会话虚拟列表；已渲染轮次、预览和旧历史分页分别从哪里来。确认新变量的定义及调用点后，修改本仓库 `officialPatch.js` 中的锚点和注入函数；必要时同步修改 `extension.js`。
+把 `ACTUAL_TARGET.js` 换成检查脚本输出的 `targetWebAsset` 文件名。若原锚点消失，先找数据流而非猜变量：URI 查询参数如何到达 `initial-route`；哪个 provider 持有 custom editor 面板及 ready 状态；哪个 ref 控制当前会话虚拟列表；已渲染轮次、预览和旧历史分页分别从哪里来。确认新变量的定义及调用点后，修改本仓库 `src/codex/officialPatch.js` 中的锚点和注入函数；必要时同步修改 `src/ui/sessionNavigation.js` 与 `src/extension.js`。
 
 必须保留以下行为：
 
@@ -56,7 +56,7 @@ node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/web
 3. 目标不在当前虚拟列表时，继续加载预览或旧历史，等目标可用再滚动；不能把“已发消息”当成“已定位”。
 4. 宿主锚点和 webview 的两个锚点都必须唯一；`isInstalled()` 必须检查两侧标记；安装必须在写入前创建对应的两份原件备份。无补丁时保留只读轮次阅读页回退。
 
-若需要临时调试，只在可恢复的测试副本或已建立备份的当前版本上操作；把诊断代码移回 `officialPatch.js` 后清除临时 overlay、日志和手改痕迹。不要直接把旧版本的压缩变量名或整个旧 bundle 拷到新版本。
+若需要临时调试，只在可恢复的测试副本或已建立备份的当前版本上操作；把诊断代码移回 `src/codex/officialPatch.js` 后清除临时 overlay、日志和手改痕迹。不要直接把旧版本的压缩变量名或整个旧 bundle 拷到新版本。
 
 ## 3. 安装前验证，再安装
 
@@ -64,14 +64,14 @@ node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/web
 
 ```bash
 npm test
-node --check officialPatch.js
+node --check src/codex/officialPatch.js
 node skills/official-codex-turn-patch/scripts/check-patched-syntax.js "$OFFICIAL_DIR"
 ```
 
 最后一条命令只在临时目录生成补丁并解析两份产物，不写官方扩展。任何失败都要先修复并重跑；不要跳过。确认第 1 步的文件及版本仍未变化后再安装：
 
 ```bash
-node officialPatch.js install "$OFFICIAL_DIR"
+node src/codex/officialPatch.js install "$OFFICIAL_DIR"
 node skills/official-codex-turn-patch/scripts/inspect-target.js "$OFFICIAL_DIR"
 ```
 
@@ -86,11 +86,11 @@ node skills/official-codex-turn-patch/scripts/inspect-target.js "$OFFICIAL_DIR"
 若要撤销**当前双文件版本**：
 
 ```bash
-node officialPatch.js restore "$OFFICIAL_DIR"
+node src/codex/officialPatch.js restore "$OFFICIAL_DIR"
 ```
 
 只有两份当前标记和两份对应备份都存在时才能恢复；之后重载 VS Code。若官方扩展已经升级、文件与备份不成对或是旧版单文件补丁，先调查版本和哈希，不要盲目复制备份。恢复后重新运行检查脚本确认标记消失。
 
 ## 5. 交付
 
-代码有变化时更新 `README.md`、插件版本和必要测试；重新打包 VSIX，确认 `skills/official-codex-turn-patch/` 的全部文件在包中。报告官方版本、安装/恢复状态、测试结果、UI 验证结果以及仍未验证的部分。不要把本地补丁描述成官方支持的稳定 API。
+代码有变化时更新 `README.md`、插件版本和必要测试；运行 `npm run package` 将 VSIX 写入 `dist/`，确认 `skills/official-codex-turn-patch/` 的全部文件在包中。报告官方版本、安装/恢复状态、测试结果、UI 验证结果以及仍未验证的部分。不要把本地补丁描述成官方支持的稳定 API。

@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { previewTurn } = require('../turnPreview');
+const { previewTurn } = require('../src/domain/turnPreview');
 
 test('positions the reader on the requested turn and shows its question and replies', () => {
   const turns = [

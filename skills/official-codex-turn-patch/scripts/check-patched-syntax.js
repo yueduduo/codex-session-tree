@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const childProcess = require('node:child_process');
-const patch = require('../../../officialPatch');
+const patch = require('../../../src/codex/officialPatch');
 
 const root = process.argv[2];
 if (!root || process.argv.length !== 3) {

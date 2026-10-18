@@ -1,30 +1,32 @@
 {
-  "name": "codex-session-tree",
-  "displayName": "Codex Session Tree",
-  "description": "Browse Codex sessions, turns, and forks in a VS Code sidebar.",
-  "version": "0.5.6",
-  "publisher": "local",
-  "private": true,
+  "name": "codex-branch-map",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
+  "version": "0.8.0",
+  "publisher": "pth-viewer",
   "license": "MIT",
-  "files": ["extension.js", "codexClient.js", "graph.js", "workspace.js", "turnPreview.js", "officialPatch.js", "media", "skills", "README.md", "LICENSE"],
+  "icon": "assets/marketplace-icon.png",
+  "galleryBanner": { "color": "#212121", "theme": "dark" },
+  "keywords": ["codex", "session", "conversation", "branch", "history"],
+  "files": ["src", "webview", "assets", "skills", "README.md", "README.zh-CN.md", "CHANGELOG.md", "LICENSE", "package.nls.json", "package.nls.zh-cn.json"],
   "engines": { "vscode": "^1.100.0" },
   "categories": ["Other"],
-  "main": "./extension.js",
+  "main": "./src/extension.js",
   "activationEvents": ["onView:codexSessionTree.sessions"],
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        { "id": "codexSessionTree", "title": "Codex Tree", "icon": "media/tree.svg" }
+        { "id": "codexSessionTree", "title": "%viewContainer.title%", "icon": "assets/activity-bar.svg" }
       ]
     },
     "views": {
       "codexSessionTree": [
-        { "id": "codexSessionTree.sessions", "name": "Session Tree", "type": "webview" }
+        { "id": "codexSessionTree.sessions", "name": "%view.sessions%", "type": "webview", "icon": "assets/activity-bar.svg" }
       ]
     },
     "commands": [
-      { "command": "codexSessionTree.refresh", "title": "Refresh Codex Session Tree", "icon": "$(refresh)" },
-      { "command": "codexSessionTree.open", "title": "Open Codex Session" }
+      { "command": "codexSessionTree.refresh", "title": "%command.refresh%", "icon": "$(refresh)" },
+      { "command": "codexSessionTree.open", "title": "%command.open%" }
     ],
     "menus": {
       "view/title": [
@@ -32,22 +34,23 @@
       ]
     },
     "configuration": {
-      "title": "Codex Session Tree",
+      "title": "%config.title%",
       "properties": {
         "codexSessionTree.codexPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the Codex CLI. Empty uses the installed OpenAI Codex extension, then codex on PATH."
+          "description": "%config.codexPath%"
         },
         "codexSessionTree.showArchived": {
           "type": "boolean",
           "default": false,
-          "description": "Include archived Codex sessions."
+          "description": "%config.showArchived%"
         }
       }
     }
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "package": "node scripts/package.js"
   }
 }

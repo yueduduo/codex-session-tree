@@ -1,0 +1,11 @@
+{
+  "extension.displayName": "Codex Branch Map",
+  "extension.description": "以 Git 风格的分支图浏览 Codex 会话，并跳转到指定轮次。",
+  "viewContainer.title": "会话分支图",
+  "view.sessions": "会话",
+  "command.refresh": "刷新会话分支图",
+  "command.open": "打开 Codex 会话",
+  "config.title": "会话分支图",
+  "config.codexPath": "Codex CLI 的路径。留空时先使用已安装的 OpenAI Codex 扩展，再使用 PATH 中的 codex。",
+  "config.showArchived": "包含已归档的 Codex 会话。"
+}

@@ -4,6 +4,7 @@ const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const { createTranslator } = require('../shared/i18n');
 
 function findCodexBinary(vscode, configuredPath) {
   if (configuredPath?.trim()) return configuredPath.trim();
@@ -19,9 +20,10 @@ function findCodexBinary(vscode, configuredPath) {
 }
 
 class CodexClient {
-  constructor(binary, onEvent = () => {}) {
+  constructor(binary, onEvent = () => {}, locale = 'en') {
     this.binary = binary;
     this.onEvent = onEvent;
+    this.t = createTranslator(locale);
     this.pending = new Map();
     this.nextId = 1;
     this.process = null;
@@ -31,7 +33,7 @@ class CodexClient {
   }
 
   async ensureStarted() {
-    if (this.disposed) throw new Error('Codex connection is closed');
+    if (this.disposed) throw new Error(this.t('connectionClosed'));
     if (this.starting) return this.starting;
     if (this.process) return;
     this.starting = this.start();
@@ -45,15 +47,15 @@ class CodexClient {
     const lines = readline.createInterface({ input: proc.stdout });
     lines.on('line', line => this.handleLine(line));
     proc.on('error', error => this.fail(error));
-    proc.on('exit', (code, signal) => this.fail(new Error(`Codex App Server exited (${signal || code}). ${this.stderr}`)));
+    proc.on('exit', (code, signal) => this.fail(new Error(this.t('serverExited', { reason: signal || code, details: this.stderr }))));
     await this.requestRaw('initialize', {
-      clientInfo: { name: 'codex_session_tree', title: 'Codex Session Tree', version: '0.1.0' }
+      clientInfo: { name: 'codex_branch_map', title: 'Codex Branch Map', version: '0.8.0' }
     });
     this.send({ method: 'initialized', params: {} });
   }
 
   send(message) {
-    if (!this.process?.stdin?.writable) throw new Error('Codex App Server is unavailable');
+    if (!this.process?.stdin?.writable) throw new Error(this.t('serverUnavailable'));
     this.process.stdin.write(`${JSON.stringify(message)}\n`);
   }
 
@@ -65,7 +67,7 @@ class CodexClient {
       this.pending.delete(message.id);
       clearTimeout(pending.timer);
       if (message.error) {
-        const error = new Error(message.error.message || 'Codex request failed');
+        const error = new Error(message.error.message || this.t('requestFailed'));
         error.code = message.error.code;
         pending.reject(error);
       } else pending.resolve(message.result);
@@ -86,7 +88,7 @@ class CodexClient {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`Codex ${method} timed out`));
+        reject(new Error(this.t('requestTimedOut', { method })));
       }, 30000);
       this.pending.set(id, { resolve, reject, timer });
       try { this.send({ id, method, params }); }
@@ -100,7 +102,7 @@ class CodexClient {
   }
 
   async listThreads(includeArchived) {
-    const threads = [];
+    const threadsById = new Map();
     for (const archived of includeArchived ? [false, true] : [false]) {
       let cursor = null;
       const seen = new Set();
@@ -109,13 +111,31 @@ class CodexClient {
           cursor, limit: 100, sortKey: 'updated_at', archived,
           sourceKinds: ['cli', 'vscode', 'appServer']
         });
-        threads.push(...(page.data || []).map(thread => ({ ...thread, archived })));
+        for (const thread of page.data || []) {
+          const record = { ...thread, archived };
+          const previous = threadsById.get(thread.id);
+          if (!previous) {
+            threadsById.set(thread.id, record);
+            continue;
+          }
+          // App Server can list several snapshots with the same session ID.
+          // Use current metadata while preserving the original creation time.
+          const latest = (record.updatedAt || 0) > (previous.updatedAt || 0) ? record : previous;
+          const older = latest === record ? previous : record;
+          const creationTimes = [previous.createdAt, record.createdAt].filter(Number.isFinite);
+          threadsById.set(thread.id, {
+            ...latest,
+            createdAt: creationTimes.length ? Math.min(...creationTimes) : undefined,
+            forkedFromId: latest.forkedFromId || older.forkedFromId,
+            sessionId: latest.sessionId || older.sessionId
+          });
+        }
         cursor = page.nextCursor || null;
-        if (cursor && seen.has(cursor)) throw new Error('Codex returned a repeated thread cursor');
+        if (cursor && seen.has(cursor)) throw new Error(this.t('repeatedThreadCursor'));
         if (cursor) seen.add(cursor);
       } while (cursor);
     }
-    return threads;
+    return [...threadsById.values()];
   }
 
   async listTurns(threadId, itemsView = 'summary') {
@@ -129,7 +149,7 @@ class CodexClient {
         });
         turns.push(...(page.data || []));
         cursor = page.nextCursor || null;
-        if (cursor && seen.has(cursor)) throw new Error('Codex returned a repeated turn cursor');
+        if (cursor && seen.has(cursor)) throw new Error(this.t('repeatedTurnCursor'));
         if (cursor) seen.add(cursor);
       } while (cursor);
       return turns;
@@ -155,7 +175,7 @@ class CodexClient {
   dispose() {
     this.disposed = true;
     this.process?.kill();
-    this.fail(new Error('Codex connection closed'));
+    this.fail(new Error(this.t('connectionClosed')));
   }
 
   async disposeAndWait() {

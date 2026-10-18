@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildForest, findForkPoint, extractUserQuestion, turnLabel, buildFamilies, buildTurnTree, layoutGitGraph } = require('../graph');
+const { buildForest, findForkPoint, extractUserQuestion, turnLabel, buildFamilies, buildTurnTree, layoutGitGraph } = require('../src/domain/graph');
 
 test('groups nested forks under original roots and keeps missing parents visible', () => {
   const threads = [
