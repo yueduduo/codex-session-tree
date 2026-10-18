@@ -1,0 +1,53 @@
+{
+  "name": "codex-session-tree",
+  "displayName": "Codex Session Tree",
+  "description": "Browse Codex sessions, turns, and forks in a VS Code sidebar.",
+  "version": "0.5.5",
+  "publisher": "local",
+  "private": true,
+  "license": "MIT",
+  "files": ["extension.js", "codexClient.js", "graph.js", "workspace.js", "turnPreview.js", "officialPatch.js", "media", "skills", "README.md", "LICENSE"],
+  "engines": { "vscode": "^1.100.0" },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "activationEvents": ["onView:codexSessionTree.sessions"],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        { "id": "codexSessionTree", "title": "Codex Tree", "icon": "media/tree.svg" }
+      ]
+    },
+    "views": {
+      "codexSessionTree": [
+        { "id": "codexSessionTree.sessions", "name": "Session Tree", "type": "webview" }
+      ]
+    },
+    "commands": [
+      { "command": "codexSessionTree.refresh", "title": "Refresh Codex Session Tree", "icon": "$(refresh)" },
+      { "command": "codexSessionTree.open", "title": "Open Codex Session" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "codexSessionTree.refresh", "when": "view == codexSessionTree.sessions", "group": "navigation" }
+      ]
+    },
+    "configuration": {
+      "title": "Codex Session Tree",
+      "properties": {
+        "codexSessionTree.codexPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Codex CLI. Empty uses the installed OpenAI Codex extension, then codex on PATH."
+        },
+        "codexSessionTree.showArchived": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include archived Codex sessions."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

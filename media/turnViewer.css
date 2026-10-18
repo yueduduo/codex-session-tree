@@ -1,0 +1,13 @@
+* { box-sizing: border-box; }
+body { margin: 0; padding: 20px; background: var(--vscode-editor-background); color: var(--vscode-editor-foreground); font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); }
+button { font: inherit; cursor: pointer; padding: 5px 10px; border: 1px solid var(--vscode-button-border, transparent); border-radius: 4px; background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); }
+button:hover:not(:disabled) { background: var(--vscode-button-secondaryHoverBackground); }
+button:disabled { opacity: .5; cursor: default; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
+.session-title { flex: 1; min-width: 180px; font-weight: 600; overflow-wrap: anywhere; }
+.position { color: var(--vscode-descriptionForeground); }
+h1 { font-size: 20px; line-height: 1.4; margin: 0 0 5px; overflow-wrap: anywhere; }
+.turn-id { color: var(--vscode-descriptionForeground); font-size: 11px; margin-bottom: 20px; overflow-wrap: anywhere; }
+h2 { font-size: 13px; margin: 0 0 8px; }
+.message { margin: 0 0 18px; padding: 14px; border: 1px solid var(--vscode-panel-border); border-radius: 5px; background: var(--vscode-editorWidget-background); }
+.message pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.5; }

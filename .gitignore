@@ -1,0 +1,19 @@
+# Built extension packages
+*.vsix
+
+# Dependencies and test output
+node_modules/
+.vscode-test/
+coverage/
+.nyc_output/
+
+# Local configuration and diagnostics
+.env
+.env.*
+*.log
+
+# Backups created while patching the installed Codex extension
+*.codex-session-tree-original
+
+# OS metadata
+.DS_Store
