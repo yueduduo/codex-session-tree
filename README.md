@@ -10,7 +10,6 @@ Codex Branch Map is a VS Code sidebar for exploring local Codex conversations. I
 
 **This release supports only the official OpenAI Codex VS Code extension `openai.chatgpt@26.1007.21434`.** The extension reads conversations through the Codex CLI bundled with that version. Its optional exact-turn navigation patch also targets that version's extension host and conversation webview. Other Codex extension versions have not been validated and are outside this release's support scope. An official Codex update may replace the patch; check the installed version before applying it again.
 
-The supported version was confirmed on the development machine and on a remote ARM64 VS Code Server. The remote server passed package, App Server, and patch syntax checks, but had no conversation history available for an end-to-end UI navigation test.
 
 ## Features
 
