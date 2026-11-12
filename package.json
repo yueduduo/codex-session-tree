@@ -2,7 +2,7 @@
   "name": "codex-branch-map",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "publisher": "pth-viewer",
   "license": "MIT",
   "icon": "assets/marketplace-icon.png",

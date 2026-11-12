@@ -4,6 +4,12 @@
 
 Codex Branch Map 是一个 VS Code 侧边栏扩展，用于浏览本地 Codex 会话。它将有关联的会话分组，用类似 Git 提交图的彩色轨道显示共同历史和分叉，并支持打开会话或选择具体轮次。
 
+## 兼容版本
+
+**此版本仅支持官方 OpenAI Codex VS Code 扩展 `openai.chatgpt@26.1007.21434`。** 本扩展通过该版本自带的 Codex CLI 读取会话；可选的精确轮次定位补丁也针对该版本的扩展宿主和会话页面。其他官方 Codex 版本尚未验证，不在此版本支持范围内。官方扩展更新可能覆盖补丁，重新安装补丁前请先核对版本。
+
+已在开发机及远程 ARM64 VS Code Server 上确认安装的官方版本。远程服务器通过了打包文件、App Server 和补丁语法检查；由于没有可用的会话历史，尚未完成端到端的界面轮次定位验证。
+
 ## 功能
 
 - **会话分组**：相关会话放在一起；当前工作区和其他工作区分别展示，各组可折叠。
@@ -16,7 +22,7 @@ Codex Branch Map 是一个 VS Code 侧边栏扩展，用于浏览本地 Codex �
 
 - VS Code 1.100.0 或更新版本。
 - 可通过 Codex CLI 读取的本地 Codex 会话记录。扩展默认依次查找已安装的 OpenAI Codex 扩展自带的 CLI，以及 `PATH` 中的 `codex`；也可设置 `codexSessionTree.codexPath`。
-- 若要在官方界面打开会话，需要安装 [OpenAI Codex 扩展](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt)。
+- 需要安装 [OpenAI Codex 扩展](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt) **26.1007.21434**。若使用精确轮次定位，请固定这个版本。
 
 可从 VS Code 扩展市场安装，或使用 **Extensions: Install from VSIX** 安装打包后的 VSIX。在活动栏打开 **会话分支图 → 会话**。进入视图、可见视图重新获得焦点、工作区文件夹变化时会自动刷新；视图可见期间每分钟也会刷新一次。也可点击标题栏的刷新按钮。
 
@@ -30,7 +36,7 @@ Codex Branch Map 是一个 VS Code 侧边栏扩展，用于浏览本地 Codex �
 
 ## 在官方 Codex 界面定位具体轮次
 
-官方 Codex 扩展没有向其他扩展开放滚动到轮次的接口。本仓库提供**可选、针对特定版本的本地补丁**：对已打开的会话增加宿主命令，对尚未打开的会话增加路由参数。补丁会备份修改的两个资源；如果预期代码锚点不匹配，则拒绝修改。官方扩展更新后可能覆盖补丁。
+官方 Codex 扩展没有向其他扩展开放滚动到轮次的接口。本仓库提供**仅针对 `openai.chatgpt@26.1007.21434` 的可选本地补丁**：对已打开的会话增加宿主命令，对尚未打开的会话增加路由参数。补丁会备份修改的两个资源；如果预期代码锚点不匹配，则拒绝修改。未重新适配和测试前，请勿对其他官方版本应用此补丁。
 
 ```sh
 node src/codex/officialPatch.js install <openai.chatgpt-扩展路径>

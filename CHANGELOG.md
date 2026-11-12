@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1
+
+- Documented the supported official Codex extension version, `openai.chatgpt@26.1007.21434`, and its patch compatibility boundary.
+- Clarified compatibility in the English and Simplified Chinese README files; kept the English README entirely in English and linked both translations.
+
 ## 0.8.0
 
 - Organized runtime code by responsibility under `src/`, moved webview resources to `webview/`, and collected icons in `assets/`.

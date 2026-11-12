@@ -49,7 +49,7 @@ class CodexClient {
     proc.on('error', error => this.fail(error));
     proc.on('exit', (code, signal) => this.fail(new Error(this.t('serverExited', { reason: signal || code, details: this.stderr }))));
     await this.requestRaw('initialize', {
-      clientInfo: { name: 'codex_branch_map', title: 'Codex Branch Map', version: '0.8.0' }
+      clientInfo: { name: 'codex_branch_map', title: 'Codex Branch Map', version: '0.8.1' }
     });
     this.send({ method: 'initialized', params: {} });
   }

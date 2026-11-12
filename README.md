@@ -1,8 +1,14 @@
 # Codex Branch Map
 
-English documentation. A complete Simplified Chinese guide is included as `README.zh-CN.md`.
+Documentation: [English](README.md) | [Simplified Chinese](README.zh-CN.md)
 
 Codex Branch Map is a VS Code sidebar for exploring local Codex conversations. It groups related sessions, draws their shared history and forks as a Git-style graph, and lets you open a session or select a specific turn.
+
+## Compatibility
+
+**This release supports only the official OpenAI Codex VS Code extension `openai.chatgpt@26.1007.21434`.** The extension reads conversations through the Codex CLI bundled with that version. Its optional exact-turn navigation patch also targets that version's extension host and conversation webview. Other Codex extension versions have not been validated and are outside this release's support scope. An official Codex update may replace the patch; check the installed version before applying it again.
+
+The supported version was confirmed on the development machine and on a remote ARM64 VS Code Server. The remote server passed package, App Server, and patch syntax checks, but had no conversation history available for an end-to-end UI navigation test.
 
 ## Features
 
@@ -16,9 +22,9 @@ Codex Branch Map is a VS Code sidebar for exploring local Codex conversations. I
 
 - VS Code 1.100.0 or newer.
 - Local Codex session history accessible through the Codex CLI. By default the extension looks for the CLI bundled with the installed OpenAI Codex extension, then for `codex` on `PATH`. You can also set `codexSessionTree.codexPath`.
-- The [OpenAI Codex extension](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt) is required to open sessions in its official view.
+- The [OpenAI Codex extension](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt), version **26.1007.21434**, is required. Pin that version if you rely on exact-turn navigation.
 
-Install the extension from the VS Code Marketplace, or use **Extensions: Install from VSIX** with the packaged VSIX. Open **Codex Branch Map → Sessions** from the Activity Bar (in Simplified Chinese, **会话分支图 → 会话**). The list refreshes when opened, when the visible view regains focus, when workspace folders change, and once a minute while visible. The toolbar refresh button is available at any time.
+Install the extension from the VS Code Marketplace, or use **Extensions: Install from VSIX** with the packaged VSIX. Open **Codex Branch Map → Sessions** from the Activity Bar. The list refreshes when opened, when the visible view regains focus, when workspace folders change, and once a minute while visible. The toolbar refresh button is available at any time.
 
 ## Using the graph
 
@@ -30,7 +36,7 @@ The graph uses session turn IDs to find shared history. It groups sessions using
 
 ## Exact navigation in the official Codex view
 
-The official Codex extension does not expose turn scrolling to other extensions. To enable it, this repository includes an **optional, version-specific local patch** for the installed official extension. The patch adds a host command for an already open conversation and a route parameter for an unopened one. It backs up the two assets it changes and refuses to apply when expected code anchors do not match. An update to the official extension may replace the patch.
+The official Codex extension does not expose turn scrolling to other extensions. To enable it, this repository includes an **optional local patch specifically for `openai.chatgpt@26.1007.21434`**. The patch adds a host command for an already open conversation and a route parameter for an unopened one. It backs up the two assets it changes and refuses to apply when expected code anchors do not match. Do not apply it to another official Codex version without adapting and testing the patch.
 
 ```sh
 node src/codex/officialPatch.js install <path-to-openai.chatgpt-extension>
@@ -66,7 +72,7 @@ test/                      Node.js tests
 skills/                    Official Codex patch maintenance guide
 ```
 
-`package.json` points to `src/extension.js`. The VSIX includes runtime code, webview resources, icons, documentation, and the patch maintenance guide; tests stay in the repository. Contribution labels remain in `package.nls*.json` at the repository root, as required by VS Code. The optional patch is maintained at `src/codex/officialPatch.js`.
+`package.json` points to `src/extension.js`. The VSIX includes runtime code, webview resources, icons, both README translations, and the patch maintenance guide; tests stay in the repository. The user interface remains available in English and Simplified Chinese. Contribution labels remain in `package.nls*.json` at the repository root, as required by VS Code. The optional patch is maintained at `src/codex/officialPatch.js`.
 
 Run `npm test` for the session grouping, graph, App Server, and patch checks. Run `npm run package` to write the current VSIX to `dist/`. Older local VSIX files are kept in `dist/archive/`. Generated packages are excluded from Git and from the VSIX contents.
 
