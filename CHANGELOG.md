@@ -4,6 +4,7 @@
 
 - Documented the supported official Codex extension version, `openai.chatgpt@26.1007.21434`, and its patch compatibility boundary.
 - Clarified compatibility in the English and Simplified Chinese README files; kept the English README entirely in English and linked both translations.
+- Added the public GitHub repository, homepage, and issue tracker to the extension metadata.
 
 ## 0.8.0
 

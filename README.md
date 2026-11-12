@@ -2,6 +2,8 @@
 
 Documentation: [English](README.md) | [Simplified Chinese](README.zh-CN.md)
 
+[Source code](https://github.com/yueduduo/codex-session-tree) | [Report an issue](https://github.com/yueduduo/codex-session-tree/issues)
+
 Codex Branch Map is a VS Code sidebar for exploring local Codex conversations. It groups related sessions, draws their shared history and forks as a Git-style graph, and lets you open a session or select a specific turn.
 
 ## Compatibility

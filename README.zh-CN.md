@@ -2,6 +2,8 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
+[源代码](https://github.com/yueduduo/codex-session-tree) · [反馈问题](https://github.com/yueduduo/codex-session-tree/issues)
+
 Codex Branch Map 是一个 VS Code 侧边栏扩展，用于浏览本地 Codex 会话。它将有关联的会话分组，用类似 Git 提交图的彩色轨道显示共同历史和分叉，并支持打开会话或选择具体轮次。
 
 ## 兼容版本
