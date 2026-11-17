@@ -7,13 +7,20 @@ description: Adapt, install, test, or restore the version-specific patch that ma
 
 本 Skill 服务于本仓库 `codex-session-tree`。按下面顺序执行；不要因为某个字符串在新版本里“看起来差不多”就直接改已安装的官方扩展。用户只要求分析时停在只读检查阶段；只有任务包含安装、修复或升级时才写入官方扩展。
 
+## 按官方版本选择补丁
+
+- [26.1111.21308](versions/26.1111.21308/guide.md) · [补丁代码](versions/26.1111.21308/patch.js)
+- [26.1007.21434](versions/26.1007.21434/guide.md) · [补丁代码](versions/26.1007.21434/patch.js)
+
+新增版本时建立对应目录，在公共安装器注册适配器，并同步两份 README 的版本表。
+
 ## 目标和文件边界
 
 - 本仓库 `src/extension.js`：处理树中的轮次点击；`src/ui/sessionNavigation.js` 先执行 `codexSessionTree.revealTurn`，无可复用面板时才调用 `vscode.open`。
 - 本仓库 `src/codex/officialPatch.js`：补丁生成、双文件备份、安装、恢复和已安装检测的唯一维护入口。不要把实验性改动仅留在已安装的官方 bundle 中。
 - 官方扩展 `out/extension.js`：注入宿主命令，用于找到已打开的同一会话面板并发送消息。
 - 官方扩展 `webview/assets/local-conversation-thread-*.js`：注入消息监听和虚拟列表定位逻辑。
-- `references/adapter-map.md`：已验证版本的变量、数据流和故障地图。**适配新的官方版本前先读它，再逐项核实新版本；不能照抄旧的压缩变量名。**
+- `versions/<version>/guide.md`：已验证版本的变量、数据流和故障地图。**适配新的官方版本前先读它，再逐项核实新版本；不能照抄旧的压缩变量名。**
 
 成功标准：首次点击可打开官方会话并定位；同一会话后续点击另一个标题只移动原面板，不新增页签；重复点击同一标题再次定位；旧历史轮次也能正确显示用户问题。侧栏状态文字和 `postMessage() === true` 都不足以证明成功。
 
@@ -39,7 +46,7 @@ node skills/official-codex-turn-patch/scripts/inspect-target.js "$OFFICIAL_DIR"
 
 ## 2. 官方版本变化时如何适配
 
-先读 `references/adapter-map.md`。用下面的限长查看工具定位新版本代码；不要直接 `rg` 输出压缩文件的整条巨型行：
+先读 `versions/<version>/guide.md`。用下面的限长查看工具定位新版本代码；不要直接 `rg` 输出压缩文件的整条巨型行：
 
 ```bash
 node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/out/extension.js" 'registerCustomEditorProvider' 400
@@ -47,7 +54,7 @@ node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/out
 node skills/official-codex-turn-patch/scripts/show-context.js "$OFFICIAL_DIR/webview/assets/ACTUAL_TARGET.js" 'scrollToKey' 400
 ```
 
-把 `ACTUAL_TARGET.js` 换成检查脚本输出的 `targetWebAsset` 文件名。若原锚点消失，先找数据流而非猜变量：URI 查询参数如何到达 `initial-route`；哪个 provider 持有 custom editor 面板及 ready 状态；哪个 ref 控制当前会话虚拟列表；已渲染轮次、预览和旧历史分页分别从哪里来。确认新变量的定义及调用点后，修改本仓库 `src/codex/officialPatch.js` 中的锚点和注入函数；必要时同步修改 `src/ui/sessionNavigation.js` 与 `src/extension.js`。
+把 `ACTUAL_TARGET.js` 换成检查脚本输出的 `targetWebAsset` 文件名。若原锚点消失，先找数据流而非猜变量：URI 查询参数如何到达 `initial-route`；哪个 provider 持有 custom editor 面板及 ready 状态；哪个 ref 控制当前会话虚拟列表；已渲染轮次、预览和旧历史分页分别从哪里来。确认新变量的定义及调用点后，修改本仓库 `versions/<version>/patch.js` 中的锚点和注入函数；必要时同步修改 `src/ui/sessionNavigation.js` 与 `src/extension.js`。
 
 必须保留以下行为：
 
@@ -79,9 +86,9 @@ node skills/official-codex-turn-patch/scripts/inspect-target.js "$OFFICIAL_DIR"
 
 ## 4. 实际 UI 验证与故障处理
 
-按 `references/adapter-map.md` 的验证矩阵逐项操作，至少检查首次打开、同会话不同轮次、重复点击同轮次、较早历史轮次和分支切换。看官方会话中实际显示的用户问题，并确认同会话跳转没有多一个页签。记录通过/失败的具体轮次和官方扩展版本。不能操作 UI 时，明确标记“只通过自动与语法检查，UI 未验证”。
+按 `versions/<version>/guide.md` 的验证矩阵逐项操作，至少检查首次打开、同会话不同轮次、重复点击同轮次、较早历史轮次和分支切换。看官方会话中实际显示的用户问题，并确认同会话跳转没有多一个页签。记录通过/失败的具体轮次和官方扩展版本。不能操作 UI 时，明确标记“只通过自动与语法检查，UI 未验证”。
 
-若失败，先分层定位：树插件有没有调用命令；官方宿主命令有没有匹配 ready 面板；消息有没有到达当前会话；目标是否在已加载条目；旧历史是否成功翻页。参考 `references/adapter-map.md` 的故障表。不要通过不断新开 URI 来掩盖“复用面板失败”。
+若失败，先分层定位：树插件有没有调用命令；官方宿主命令有没有匹配 ready 面板；消息有没有到达当前会话；目标是否在已加载条目；旧历史是否成功翻页。参考 `versions/<version>/guide.md` 的故障表。不要通过不断新开 URI 来掩盖“复用面板失败”。
 
 若要撤销**当前双文件版本**：
 

@@ -15,6 +15,7 @@ const hostSource = 'e.push(Mt.commands.registerCommand("chatgpt.openSidebar",Ru)
 
 test('the official bridge is guarded, idempotent, and reversible', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-tree-patch-'));
+  fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ publisher: 'openai', name: 'chatgpt', version: '26.1007.21434' }));
   const assets = path.join(root, 'webview', 'assets');
   fs.mkdirSync(assets, { recursive: true });
   fs.mkdirSync(path.join(root, 'out'));
@@ -101,5 +102,28 @@ test('an open conversation scrolls on successive turn messages without remountin
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(scrolled, [first, second, first]);
   cleanup();
+  assert.equal(listener, null);
+});
+
+test('November adapter locates the requested turn on first open and repeated clicks', async () => {
+  const adapter = require('../skills/official-codex-turn-patch/versions/26.1111.21308/patch');
+  const threadId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  const turnId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+  const calls = [];
+  let listener, cleanup;
+  const context = {
+    t: threadId, x: {}, Kn() {}, Jn() {}, jf() {}, ms: fn => fn,
+    Tx: { useEffect(fn) { cleanup = fn(); } },
+    document: { querySelector: () => ({ content: '/local/' + threadId + '?codexTreeTurnId=' + turnId }) },
+    location: { href: 'https://localhost' }, URL, AbortController, clearTimeout, setTimeout,
+    window: { addEventListener(_, fn) { listener = fn; }, removeEventListener() { listener = null; } },
+    zt: { current: { scrollToKey: key => calls.push(key) } },
+    hn: [{ turnId, turnKey: 'virtual-key' }]
+  };
+  vm.runInNewContext(patchSource(adapter.anchors.webEffect, adapter), context);
+  listener({ data: { type: 'codex-tree-reveal-turn', threadId, turnId } });
+  await new Promise(resolve => setImmediate(resolve));
+  cleanup();
+  assert.deepEqual(calls, ['virtual-key', 'virtual-key']);
   assert.equal(listener, null);
 });

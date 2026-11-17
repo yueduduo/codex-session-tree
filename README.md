@@ -8,8 +8,10 @@ Codex Branch Map is a VS Code sidebar for exploring local Codex conversations. I
 
 ## Compatibility
 
-**This release supports only the official OpenAI Codex VS Code extension `openai.chatgpt@26.1007.21434`.** The extension reads conversations through the Codex CLI bundled with that version. Its optional exact-turn navigation patch also targets that version's extension host and conversation webview. Other Codex extension versions have not been validated and are outside this release's support scope. An official Codex update may replace the patch; check the installed version before applying it again.
-
+| Official Codex version | Turn navigation patch | Adapter guide |
+| --- | --- | --- |
+| `26.1111.21308` | [patch.js](skills/official-codex-turn-patch/versions/26.1111.21308/patch.js) | [Guide](skills/official-codex-turn-patch/versions/26.1111.21308/guide.md) |
+| `26.1007.21434` | [patch.js](skills/official-codex-turn-patch/versions/26.1007.21434/patch.js) | [Guide](skills/official-codex-turn-patch/versions/26.1007.21434/guide.md) |
 
 ## Features
 
@@ -23,7 +25,7 @@ Codex Branch Map is a VS Code sidebar for exploring local Codex conversations. I
 
 - VS Code 1.100.0 or newer.
 - Local Codex session history accessible through the Codex CLI. By default the extension looks for the CLI bundled with the installed OpenAI Codex extension, then for `codex` on `PATH`. You can also set `codexSessionTree.codexPath`.
-- The [OpenAI Codex extension](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt), version **26.1007.21434**, is required. Pin that version if you rely on exact-turn navigation.
+- The [OpenAI Codex extension](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt), at a version listed above, is required. Pin that version if you rely on exact-turn navigation.
 
 Install the extension from the VS Code Marketplace, or use **Extensions: Install from VSIX** with the packaged VSIX. Open **Codex Branch Map → Sessions** from the Activity Bar. The list refreshes when opened, when the visible view regains focus, when workspace folders change, and once a minute while visible. The toolbar refresh button is available at any time.
 
@@ -37,7 +39,7 @@ The graph uses session turn IDs to find shared history. It groups sessions using
 
 ## Exact navigation in the official Codex view
 
-The official Codex extension does not expose turn scrolling to other extensions. To enable it, this repository includes an **optional local patch specifically for `openai.chatgpt@26.1007.21434`**. The patch adds a host command for an already open conversation and a route parameter for an unopened one. It backs up the two assets it changes and refuses to apply when expected code anchors do not match. Do not apply it to another official Codex version without adapting and testing the patch.
+The official Codex extension does not expose turn scrolling to other extensions. To enable it, this repository includes an **optional local patch for each listed version**. The patch adds a host command for an already open conversation and a route parameter for an unopened one. It backs up the two assets it changes and refuses to apply when expected code anchors do not match. Do not apply it to another official Codex version without adapting and testing the patch.
 
 ```sh
 node src/codex/officialPatch.js install <path-to-openai.chatgpt-extension>

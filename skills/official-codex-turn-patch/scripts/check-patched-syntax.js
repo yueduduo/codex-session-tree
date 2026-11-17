@@ -19,8 +19,8 @@ try {
   const hostSource = fs.readFileSync(patch.hostPath(root), 'utf8');
   temp = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-tree-patch-check-'));
   const files = [
-    [path.join(temp, 'conversation.mjs'), patch.patchSource(webSource)],
-    [path.join(temp, 'extension.js'), patch.patchHostSource(hostSource)]
+    [path.join(temp, 'conversation.mjs'), patch.patchSource(webSource, patch.targetAdapter(root))],
+    [path.join(temp, 'extension.js'), patch.patchHostSource(hostSource, patch.targetAdapter(root))]
   ];
   for (const [file, source] of files) {
     fs.writeFileSync(file, source);

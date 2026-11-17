@@ -11,11 +11,8 @@ if (!root || process.argv.length !== 3) {
   process.exit(2);
 }
 
-const anchors = {
-  webRef: 'qt=(0,Q.useRef)(null),[Xt,Zt]=',
-  webEffect: '(0,Q.useEffect)(()=>_i(D,t,{revealItem:Hn,revealResponseTextAnnotation:Un}),[t,Hn,Un,D])',
-  hostCommand: 'e.push(Mt.commands.registerCommand("chatgpt.openSidebar",Ru))'
-};
+const { targetAdapter } = require('../../../src/codex/officialPatch');
+const { anchors } = targetAdapter(root);
 const markers = {
   webCurrent: '/* codex-session-tree:reveal-turn:v2 */',
   webOld: '/* codex-session-tree:reveal-turn:v1 */',

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.0
+
+- Added a turn navigation adapter for official Codex 26.1111.21308 and retained support for 26.1007.21434.
+
 ## 0.8.1
 
 - Documented the supported official Codex extension version, `openai.chatgpt@26.1007.21434`, and its patch compatibility boundary.
