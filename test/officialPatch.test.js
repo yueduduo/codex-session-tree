@@ -118,12 +118,15 @@ test('November adapter locates the requested turn on first open and repeated cli
     location: { href: 'https://localhost' }, URL, AbortController, clearTimeout, setTimeout,
     window: { addEventListener(_, fn) { listener = fn; }, removeEventListener() { listener = null; } },
     zt: { current: { scrollToKey: key => calls.push(key) } },
-    hn: [{ turnId, turnKey: 'virtual-key' }]
+    hn: [{ sourceTurnSearchKey: turnId, turnKey: 'virtual-key' }],
+    kn: { current: new Map([[turnId, 'virtual-key'], [threadId, 'ordinary-key']]) },
+    Kt: { isNativeEndSnapFollowing: () => true, holdViewport() {} }
   };
   vm.runInNewContext(patchSource(adapter.anchors.webEffect, adapter), context);
+  listener({ data: { type: 'codex-tree-reveal-turn', threadId, turnId: threadId } });
   listener({ data: { type: 'codex-tree-reveal-turn', threadId, turnId } });
   await new Promise(resolve => setImmediate(resolve));
   cleanup();
-  assert.deepEqual(calls, ['virtual-key', 'virtual-key']);
+  assert.deepEqual(calls, ['virtual-key', 'ordinary-key', 'virtual-key']);
   assert.equal(listener, null);
 });

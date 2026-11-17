@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.1
+
+- Resolve ordinary turns through the official virtual list index on Codex 26.1111.21308 and release end-following before scrolling.
+- If the 0.9.0 local navigation patch was previously applied, run its restore command before installing the updated patch.
+
 ## 0.9.0
 
 - Added a turn navigation adapter for official Codex 26.1111.21308 and retained support for 26.1007.21434.

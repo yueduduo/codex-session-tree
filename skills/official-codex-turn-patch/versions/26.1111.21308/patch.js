@@ -46,9 +46,10 @@ function currentTurnEffect() {
 // Runs inside the conversation component through its stable ms callback.
 async function locateCurrentTurn(turnId, signal) {
   if (!zt.current) return false;
-  const entry = hn.find(row => row.turnId === turnId || row.turnKey === turnId || row.turnSearchKey === turnId);
-  if (entry) {
-    await zt.current.scrollToKey(entry.turnKey, undefined, { align: 'top', signal });
+  const key = kn.current.get(turnId) ?? hn.find(row => row.turnId === turnId && row.turnKey != null)?.turnKey;
+  if (key != null) {
+    if (Kt.isNativeEndSnapFollowing?.()) Kt.holdViewport();
+    await zt.current.scrollToKey(key, undefined, { align: 'top', signal });
     return true;
   }
   if (Dn?.items.some(row => row.turnId === turnId)) {

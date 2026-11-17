@@ -2,7 +2,7 @@
   "name": "codex-branch-map",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "publisher": "pth-viewer",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/yueduduo/codex-session-tree.git" },
